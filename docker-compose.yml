@@ -1,0 +1,234 @@
+version: '3'
+services:
+  portainer:
+    image: portainer/portainer
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./portainer:/data
+    ports:
+    - 19000:9000
+    restart: always
+
+  boomi_atom:
+    image: boomi/atom:release
+    privileged: true
+    environment:
+      - URL=https://platform.boomi.com
+      - BOOMI_ATOMNAME=iotsimulation
+      - BOOMI_CONTAINERNAME=iotsimulation
+      - ATOM_LOCALHOSTID=iotsimulation
+      - INSTALL_TOKEN=boomiToken
+      - BOOMI_ENVIRONMENTID=boomiEnvironmentId
+      - INSTALLATION_DIRECTORY=/var/boomi
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./boomi_dir:/var/boomi:consistent"
+    links:
+      - zookeeper
+      - kafka
+      - kafka-connect
+      - mosquitto
+      - gpsinventory
+      - gpsinventory-api
+
+
+  mosquitto:
+    image: eclipse-mosquitto:1.6.14
+    hostname: mosquitto
+    container_name: mosquitto
+    expose:
+      - "1883"
+      - "9001"
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+# Once the broker is up
+# docker run -it --rm efrecon/mqtt-client sub -h 172.31.0.100 -t "#" -v
+# docker run -it --rm efrecon/mqtt-client pub -h 172.31.0.100 -t test/test1 -m "hello world"
+# Reference for mosquitto.conf https://github.com/FIWARE/tutorials.IoT-over-MQTT/blob/master/mosquitto/mosquitto.conf
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: "2181"
+      ZOOKEEPER_TICK_TIME: "2000"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    links:
+     - zookeeper
+    environment:
+      KAKFA_BROKER_ID: "1"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.1
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.1
+    links:
+      - elasticsearch
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200/
+      XPACK_SECURITY_ENABLED: "true"
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:3.3.0
+    links:
+     - elasticsearch
+     - kafka
+     - zookeeper
+    ports:
+      - 8083:8083
+    depends_on:
+      - zookeeper
+      - kafka
+      - elasticsearch
+    volumes:
+      - $PWD/connect-plugins:/connect-plugins
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: "connect"
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-config
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_REPLICATION_FACTOR: 1
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+      CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
+      CONNECT_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONNECT_PLUGIN_PATH: /connect-plugins
+      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-3.3.0.jar
+
+
+  kafka-rest-proxy:
+    image: confluentinc/cp-kafka-rest:4.1.1
+    hostname: kafka-rest-proxy
+    depends_on:
+      - zookeeper
+      - kafka
+    links:
+      - zookeeper
+      - kafka
+    ports:
+      - "8082:8082"
+    environment:
+      KAFKA_REST_HOST_NAME: kafka-rest-proxy
+      KAFKA_REST_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_REST_LISTENERS: 'http://kafka-rest-proxy:8082'
+
+  kafka-topics-ui:
+    image: landoop/kafka-topics-ui:latest
+    depends_on:
+      - zookeeper
+      - kafka
+      - kafka-rest-proxy
+    links:
+      - zookeeper
+      - kafka
+      - kafka-rest-proxy
+    ports:
+      - "8000:8000"
+    environment:
+      KAFKA_REST_PROXY_URL: 'kafka-rest-proxy:8082'
+      PROXY: "true"
+
+  kafka-connect-ui:
+    image: landoop/kafka-connect-ui:latest
+    depends_on:
+      - zookeeper
+      - kafka
+      - kafka-connect
+    links:
+      - zookeeper
+      - kafka
+      - kafka-connect
+    ports:
+      - "8001:8000"
+    environment:
+      CONNECT_URL: 'kafka-connect:8083'
+
+
+  gpsinventory:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dbpass
+      POSTGRES_DB: gpsinventory
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./gpsinventory-api-and-db/postgresql/postgresql-dump:/docker-entrypoint-initdb.d
+
+
+  gpsinventory-api:
+    image: gpsinventory-api:latest
+    build:
+      context: ./gpsinventory-api-and-db/
+      dockerfile: Dockerfile
+    environment:
+      dbhost: "gpsinventory"
+      dbport: 5432
+      dbname: "gpsinventory"
+      dbuser: "root"
+      dbpass: "dbpass"
+    ports:
+      - "8031:8080"
+    restart: on-failure
+    depends_on:
+      - gpsinventory
+    links:
+      - gpsinventory
+    
+  adminer:
+    image: adminer
+    restart: always
+    depends_on:
+      - gpsinventory
+    ports:
+      - "32003:8080"
+    links:
+      - gpsinventory

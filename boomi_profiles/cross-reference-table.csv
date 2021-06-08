@@ -1,0 +1,5 @@
+newGpsTerminalId,country,state,city,customerId,customerName,vehicleNumber
+gps-001-0001,India,Delhi,Delhi,0001,ABC-1 limited,DL-ABC-0001
+gps-001-0002,India,Maharashtra,Mumbai,0002,ABC-2 limited,MH-ABC-0002
+gps-001-0003,India,Karnataka,Bangalore,0003,ABC-3 limited,KA-ABC-0003
+gps-001-0004,India,Tamil Nadu,Chennai,0004,ABC-4 limited,MH-ABC-0004

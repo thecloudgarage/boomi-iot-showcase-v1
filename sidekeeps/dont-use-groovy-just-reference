@@ -1,0 +1,22 @@
+
+DONT USE: Alternative method to temperature as a whole number (not used in this example., just for reference)
+```
+import java.util.Properties;
+import java.text.DateFormat;
+import java.util.GregorianCalendar;
+import java.util.Calendar;
+import java.util.Date;
+import java.text.SimpleDateFormat
+import java.io.InputStream;
+int intValue = 5;
+for ( int i = 0; i <= intValue; i++) {
+Thread.sleep(5000);
+Calendar cal = Calendar.getInstance();
+DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd HHmmss.SSS");
+datetimeoutput = dateFormat.format(cal.getTime());
+latitudeoutput = latitudeinput + Math.random();
+longitudeoutput = longitudeinput + Math.random();
+Random rnd = new Random();
+temperatureoutput = temperatureinput + rnd.nextInt(2);
+}
+```
