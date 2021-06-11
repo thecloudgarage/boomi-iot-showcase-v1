@@ -1,0 +1,14 @@
+{
+  "gpsterminalid": "gps-001-0001",
+  "customerId": 1,
+  "customerName": "ABC-1 Limited",
+  "location": { "lat": 19.079070, "long": 72.907976 },
+  "temperature": 93.00,
+  "speed": 35.00,
+  "fueltotal": 1.00,
+  "distancetotal": 1.00,
+  "fueldiff": 1.00,
+  "distancediff": 1.00,
+  "datetime": "2021-06-07T06:23:37.825Z"
+
+}
