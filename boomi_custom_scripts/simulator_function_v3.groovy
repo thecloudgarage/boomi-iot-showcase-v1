@@ -29,15 +29,15 @@ int intValue = 0;
 for ( int i = 0; i <= intValue; i++) {
 
 // Set initial time & Induce delay for every loop
-sleepTimer = 6000;
+sleepTimer = 20000;
 Thread.sleep(sleepTimer);
 
 // Relay the GPS terminal id as-is
 gpsterminalidoutput = gpsterminalidinput;
 
 // Generate the next latitude longitude for the loop
-latitudeoutput = latitudeinput + (Math.random() / 1000);
-longitudeoutput = longitudeinput + (Math.random() / 1000);
+latitudeoutput = latitudeinput + (Math.random() / 250);
+longitudeoutput = longitudeinput + (Math.random() / 250);
 
 // Generate random incremental or decremental temperature values
 temperatureoutput = temperatureinput + Math.random() -  Math.random();
