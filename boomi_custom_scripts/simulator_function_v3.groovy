@@ -39,6 +39,12 @@ gpsterminalidoutput = gpsterminalidinput;
 latitudeoutput = latitudeinput + (Math.random() / 1000);
 longitudeoutput = longitudeinput + (Math.random() / 1000);
 
+// Generate random incremental or decremental temperature values
+temperatureoutput = temperatureinput + Math.random() -  Math.random();
+
+// Calculate time difference in hours
+double timediffHours = sleepTimer / 3600000;
+
 // Calculate distance travelled based on old and new values of lat,long
   
 // The math module contains a function
@@ -62,10 +68,13 @@ double r = 6371;
 // calculate the incremental distance travelled
 distancediff = c * r;
 
+// Finally calculate speed
+speedoutput = distancediff / timediffHours;
+
 // Calculate total distance travelled
 // At initial distancetotaloutput is set to distancediff
-if (distancediffinput != null) {
-distancetotaloutput = distancediffinput +  distancediff;
+if (distancetotalinput != null) {
+distancetotaloutput = distancetotalinput +  distancediff;
 distancediffoutput = distancediff;
 }
 else {
@@ -73,15 +82,6 @@ distancetotaloutput = distancediff;
 distancediffoutput = distancediff;
 };
 
-// Generate random incremental or decremental temperature values
-temperatureoutput = temperatureinput + Math.random() -  Math.random();
-
-// Calculate time difference in hours
-double timediffHours = sleepTimer / 3600000;
-
-// Finally calculate speed
-speedoutput = distancediff / timediffHours;
- 
 // Calculate fuel
 
 // Assume a varying fuel efficiency
@@ -91,8 +91,8 @@ double fuelefficiency = 10.00 + Math.random() -  Math.random();
 fueldiffoutput = distancediff / fuelefficiency;
 
 // Calculate total fuel consumed
-if (fueldiffinput != null) {
-fueltotaloutput = fueldiffinput +  fueldiffoutput;
+if (fueltotalinput != null) {
+fueltotaloutput = fueltotalinput +  fueldiffoutput;
 }
 else {
 fueltotaloutput = fueldiffoutput;
