@@ -10,21 +10,6 @@ import java.text.SimpleDateFormat
 import java.io.InputStream;
 import groovy.time.*;
 
-// gpsterminalidinput
-// latitudeinput
-// longitudeinput
-// temperatureinput
-// fuelinput
-
-// gpsterminalidoutput
-// latitudeoutput
-// longitudeoutput
-// distancediff
-// temperatureoutput
-// speed
-// fueldiff
-// fueltotal
-
 int intValue = 0;
 for ( int i = 0; i <= intValue; i++) {
 
@@ -35,7 +20,7 @@ Thread.sleep(sleepTimer);
 // Relay the GPS terminal id as-is
 gpsterminalidoutput = gpsterminalidinput;
 
-// Generate the next latitude longitude for the loop
+// Generate the next latitude longitude for the loop with randomness. Iterated the divisibilty to observe near real scenarios.
 latitudeoutput = latitudeinput + (Math.random() / 250);
 longitudeoutput = longitudeinput + (Math.random() / 250);
 
@@ -68,10 +53,10 @@ double r = 6371;
 // calculate the incremental distance travelled
 distancediff = c * r;
 
-// Finally calculate speed
+// Finally calculate speed. Validated through iterations., looks good for a near-real scenario.
 speedoutput = distancediff / timediffHours;
 
-// Calculate total distance travelled
+// Calculate total distance and incremental distance travelled per loop
 // At initial distancetotaloutput is set to distancediff
 if (distancetotalinput != null) {
 distancetotaloutput = distancetotalinput +  distancediff;
@@ -107,7 +92,7 @@ else {
 fueltotaloutput = fueldiffoutput;
 };
 
-// Set incremental timestamp
+// Set incremental timestamp. Note the map date-time format should align with the one mentioned here.
 Calendar cal = Calendar.getInstance();
 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 timestampoutput = dateFormat.format(cal.getTime());
