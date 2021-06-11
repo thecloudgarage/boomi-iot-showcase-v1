@@ -1,2 +1,2 @@
-newGpsTerminalId,newLatitude,newLongitude,newTemperature,newFuel,newDateTime
-gps-001-0001,28.703038,77.132493,93.00,35.00,20210530 090053.989
+gpsterminalid,lat,long,temperature,speed,fueldiff,fueltotal,distancediff,distancetotal,timestamp
+gps-001-0001,28.703038,77.132493,93.00,65.00,1.00,35.00,1.00,10.00,22021-06-07T06:23:37.825Z
