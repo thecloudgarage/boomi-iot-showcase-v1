@@ -84,8 +84,17 @@ distancediffoutput = distancediff;
 
 // Calculate fuel
 
-// Assume a varying fuel efficiency
-double fuelefficiency = 10.00 + Math.random() -  Math.random();
+// Assume fuel efficiency for varying speeds
+
+if (speedoutput <= 30.00) {
+fuelefficiency = 10.00 -  Math.random() - Math.random();
+}
+else if (speedoutput <= 50.00){
+fuelefficiency = 10.00 +  Math.random();
+}
+else {
+fuelefficiency = 10.00 +  Math.random() + Math.random();
+};
 
 // Calculate amount of fuel required for the incremental distance
 fueldiffoutput = distancediff / fuelefficiency;
